@@ -1,0 +1,112 @@
+#include <QTRSensors.h>
+#include <ZumoMotors.h>
+#include <ZumoReflectanceSensorArray.h>
+ZumoMotors motors;
+ZumoReflectanceSensorArray reflectanceSensors;
+#define NUM_SENSORS 6
+unsigned int sensorValues[NUM_SENSORS];
+int A = 0;
+int B = 0;
+int C = 0;
+int D = 0;
+int E = 0;
+int F = 0;
+
+int ll = 0;
+int cm = 0;
+const int buttonPin = 12;
+const int ledPin = 13;
+int a = 0;
+int buttonState = 0;
+
+void setup() {
+Serial.begin(9600);
+reflectanceSensors.init();
+delay(500);
+pinMode(ledPin, OUTPUT);
+digitalWrite(ledPin, HIGH);
+pinMode(buttonPin, INPUT_PULLUP);
+
+unsigned long startTime = millis();
+while(millis() - startTime < 10000) // hacer que la calibración tome 10 segundos
+{
+reflectanceSensors.calibrate();
+}
+digitalWrite(13, LOW); // apaga el LED para indicar que hemos terminado con la calibración
+
+// imprime los valores mínimos de calibración medidos cuando los emisores estaban encendidos
+Serial.begin(9600);
+for (byte i = 0; i < NUM_SENSORS; i++)
+{
+Serial.print(reflectanceSensors.calibratedMinimumOn[i]);
+Serial.print(' ');
+}
+Serial.println();
+
+// imprime los valores máximos de calibración medidos cuando los emisores estaban encendidos
+for (byte i = 0; i < NUM_SENSORS; i++)
+{
+Serial.print(reflectanceSensors.calibratedMaximumOn[i]);
+Serial.print(' ');
+}
+Serial.println();
+delay(1000);
+}
+
+void loop() {
+
+buttonState = digitalRead(buttonPin);
+
+if (buttonState == LOW) {
+
+a++;
+digitalWrite(ledPin, HIGH);
+delay(1000);
+digitalWrite(ledPin, LOW);
+}
+
+if(a % 2 == 0){
+motors.setLeftSpeed(0);
+motors.setRightSpeed(0);
+}
+
+if(a % 2 == 1){
+
+unsigned int position = reflectanceSensors.readLine(sensorValues);
+for (byte i = 0; i < NUM_SENSORS; i++)
+{
+Serial.print(reflectanceSensors.calibratedMaximumOn[i]);
+Serial.print(' ');
+}
+Serial.println();
+
+A = sensorValues[0];
+B = sensorValues[1];
+C = sensorValues[2];
+D = sensorValues[3];
+E = sensorValues[4];
+F = sensorValues[5];
+
+if(A < 500 && F < 500){
+motors.setLeftSpeed(300);
+motors.setRightSpeed(300);
+}
+if(A > 500){
+motors.setLeftSpeed(-300); // atras
+motors.setRightSpeed(-300); // atras
+delay(200);
+motors.setLeftSpeed(300); // adelante
+motors.setRightSpeed(300); // adelante
+delay(100);
+}
+if(F > 500){
+motors.setLeftSpeed(-300); // atras
+motors.setRightSpeed(-300); // atras
+delay(200);
+motors.setLeftSpeed(-300); // adelante
+motors.setRightSpeed(300); // adelante
+delay(100);
+}
+}
+
+}
