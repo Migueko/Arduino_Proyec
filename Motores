@@ -1,0 +1,40 @@
+#include <Stepper.h>
+#include <Servo.h>
+
+double stepsPerRevolution = 2048;
+Stepper myStepper (stepsPerRevolution, 7,6,5,4); // Inversión de pines para que la biblioteca funcione
+Servo servoMotor;
+
+void setup() {
+// put your setup code here, to run once:
+
+myStepper. setSpeed(10);
+servoMotor.attach(2);
+Serial.begin(9600);
+
+}
+
+void loop() {
+// put your main code here, to run repeatedly:
+
+// 1 rotación en el sentido de las agujas del reloj:
+Serial.println("clockwise");
+myStepper.step(stepsPerRevolution);
+//delay(1000);
+
+// Desplazamos a la posición 0º
+servoMotor.write(0);
+// Esperamos 1 segundo
+delay(100);
+
+// Desplazamos a la posición 90º
+servoMotor.write(90);
+// Esperamos 1 segundo
+delay(100);
+
+// Desplazamos a la posición 180º
+servoMotor.write(180);
+// Esperamos 1 segundo
+delay(100);
+
+}
